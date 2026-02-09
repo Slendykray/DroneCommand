@@ -25,6 +25,7 @@ namespace DroneCommand
         public void Awake()
         {
             Log.Init(Logger);
+            Asset.Init();
 
             var ArtifactTypes = Assembly.GetExecutingAssembly().GetTypes().Where(type => !type.IsAbstract && type.IsSubclassOf(typeof(ArtifactBase)));
             foreach (var artifactType in ArtifactTypes)

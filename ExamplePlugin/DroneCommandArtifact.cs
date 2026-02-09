@@ -18,8 +18,10 @@ namespace DroneCommand
         public override string ArtifactName => "Artifact of Drone Command";
         public override string ArtifactLangTokenName => "ARTIFACT_OF_DRONE_COMMAND";
         public override string ArtifactDescription => "Choose your drones.";
-        public override Sprite ArtifactEnabledIcon => Addressables.LoadAssetAsync<Sprite>("RoR2/Base/Command/texArtifactCommandEnabled.png").WaitForCompletion();
-        public override Sprite ArtifactDisabledIcon => Addressables.LoadAssetAsync<Sprite>("RoR2/Base/Command/texArtifactCommandDisabled.png").WaitForCompletion();
+        //public override Sprite ArtifactEnabledIcon => Addressables.LoadAssetAsync<Sprite>("RoR2/Base/Command/texArtifactCommandEnabled.png").WaitForCompletion();
+        //public override Sprite ArtifactDisabledIcon => Addressables.LoadAssetAsync<Sprite>("RoR2/Base/Command/texArtifactCommandDisabled.png").WaitForCompletion();
+        public override Sprite ArtifactEnabledIcon => Asset.mainBundle.LoadAsset<Sprite>("DroneCommandEnabled.png");
+        public override Sprite ArtifactDisabledIcon => Asset.mainBundle.LoadAsset<Sprite>("DroneCommandDisabled.png");
 
         public override void Init(ConfigFile config)
         {
