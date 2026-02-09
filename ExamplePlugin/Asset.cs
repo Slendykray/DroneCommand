@@ -10,7 +10,7 @@ namespace DroneCommand
         public static AssetBundle mainBundle;
         //A constant of the AssetBundle's name.
         // Remember this is a direct path, so if your extension is .bundle, call this thing mybundle.bundle
-        public const string bundleName = "mainbundle";
+        public const string bundleName = "DroneCommandBundle";
         // Uncomment this if your assetbundle is in its own folder. Of course, make sure the name of the folder matches this.
         // public const string assetBundleFolder = "AssetBundles";
 
