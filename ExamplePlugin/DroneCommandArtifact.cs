@@ -10,6 +10,11 @@ using RoR2.UI;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using RoR2.CharacterAI;
+using R2API;
+using IL.RoR2.ContentManagement;
+using RiskOfOptions;
+using RiskOfOptions.Options;
+using RiskOfOptions.OptionConfigs;
 
 namespace DroneCommand
 {
@@ -18,38 +23,135 @@ namespace DroneCommand
         public override string ArtifactName => "Artifact of Drone Command";
         public override string ArtifactLangTokenName => "ARTIFACT_OF_DRONE_COMMAND";
         public override string ArtifactDescription => "Choose your drones.";
-        //public override Sprite ArtifactEnabledIcon => Addressables.LoadAssetAsync<Sprite>("RoR2/Base/Command/texArtifactCommandEnabled.png").WaitForCompletion();
-        //public override Sprite ArtifactDisabledIcon => Addressables.LoadAssetAsync<Sprite>("RoR2/Base/Command/texArtifactCommandDisabled.png").WaitForCompletion();
         public override Sprite ArtifactEnabledIcon => Asset.mainBundle.LoadAsset<Sprite>("DroneCommandEnabled.png");
         public override Sprite ArtifactDisabledIcon => Asset.mainBundle.LoadAsset<Sprite>("DroneCommandDisabled.png");
 
+        public static ConfigEntry<bool> sameTier;
         public override void Init(ConfigFile config)
         {
             CreateConfig(config);
             CreateLang();
             CreateArtifact();
             Hooks();
+            CreateFakeItemDefs();
         }
         private void CreateConfig(ConfigFile config)
         {
+            sameTier = config.Bind<bool>("Artifact: " + ArtifactName, "SameTier", false, "Only allow to pick drones from the same tier (boring)");
 
+            if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("com.rune580.riskofoptions"))
+            {
+                Sprite icon = Asset.mainBundle.LoadAsset<Sprite>("DroneCommandEnabled.png");
+                ModSettingsManager.SetModIcon(icon);
+
+                ModSettingsManager.AddOption(new CheckBoxOption(sameTier));          
+            }
         }
         public override void Hooks()
         {
             On.RoR2.Interactor.PerformInteraction += HandleDrone;
             On.RoR2.CharacterMaster.Start += HandleEquipmentDrone;
+            On.RoR2.ItemCatalog.Init += ResolveFakeItemDefs;
+            On.RoR2.UI.PickupPickerPanel.SetPickupOptions += OverrideColor;
+            On.RoR2.PickupPickerController.OnDisplayEnd += Cleanup;
         }
 
+        private void Cleanup(On.RoR2.PickupPickerController.orig_OnDisplayEnd orig, PickupPickerController self, NetworkUIPromptController networkUIPromptController, LocalUser localUser, CameraRigController cameraRigController)
+        {
+            orig(self, networkUIPromptController, localUser, cameraRigController);
 
+            if (self.transform.name.Contains("gofuckyourself"))
+            {
+                UnityEngine.Object.Destroy(self.gameObject);
+            }
+        }
+
+        private void OverrideColor(On.RoR2.UI.PickupPickerPanel.orig_SetPickupOptions orig, PickupPickerPanel self, PickupPickerController.Option[] options)
+        {
+            orig(self, options);
+
+            if (self.transform.name.Contains("fuckingpanel"))
+            {
+                PickupPickerPanel origPicker = RoR2.Artifacts.CommandArtifactManager.commandCubePrefab.GetComponent<PickupPickerController>().panelPrefab.GetComponent<PickupPickerPanel>();
+                PickupPickerPanel picker = self;
+                Image[] array2 = origPicker.coloredImages;
+                Image[] array = picker.coloredImages;
+                for (int i = 0; i < array.Length; i++)
+                {
+                    array[i].color = array2[i].color;
+                    array[i].color *= new Color32(41, 101, 255, 255);
+                }
+                array2 = origPicker.darkColoredImages;
+                array = picker.darkColoredImages;
+                for (int i = 0; i < picker.darkColoredImages.Length; i++)
+                {
+                    array[i].color = array2[i].color;
+                    array[i].color *= new Color32(41, 101, 255, 255);
+                }
+            }
+        }
+
+        private Dictionary<DroneIndex, ItemIndex> droneToFakeItem = new();
+        private Dictionary<ItemIndex, DroneIndex> fakeItemToDrone = new();
+
+        private int fakeItemsPool = 50;
+        private List<string> fakeItemNames = new();
+
+        private void ResolveFakeItemDefs(On.RoR2.ItemCatalog.orig_Init orig)
+        {
+            orig();
+
+            DroneDef[] drones = DroneCatalog.droneDefs;
+
+            for (int i = 0; i < drones.Length; i++)
+            {
+                ItemIndex itemIndex = ItemCatalog.FindItemIndex(fakeItemNames[i]);
+                DroneIndex droneIndex = drones[i].droneIndex;
+
+                DroneDef drone = drones[i];
+                ItemDef itemDef = ItemCatalog.GetItemDef(itemIndex);
+
+                itemDef.name = drone.name;
+                itemDef.nameToken = drone.nameToken;
+                itemDef.pickupToken = drone.pickupToken;
+                itemDef.descriptionToken = drone.descriptionToken;   
+
+                itemDef.pickupIconSprite = drone.iconSprite;
+
+                droneToFakeItem.Add(droneIndex, itemIndex);
+                fakeItemToDrone.Add(itemIndex, droneIndex);
+            }
+        }    
+        private void CreateFakeItemDefs()
+        {
+            for (int i = 0; i < fakeItemsPool; i++)
+            {
+                ItemDef itemDef = ScriptableObject.CreateInstance<ItemDef>();
+
+                itemDef.name = $"FAKE_DRONE_{i}_NAME";
+                itemDef.nameToken = $"FAKE_DRONE_{i}_NAME";
+                itemDef.pickupToken = $"FAKE_DRONE_{i}_PICKUP";
+                itemDef.descriptionToken = $"FAKE_DRONE_{i}_DESC";         
+                itemDef.loreToken = "yes i like femboys";
+
+                itemDef.hidden = true;
+                itemDef.canRemove = false;          
+                itemDef.tags = [ItemTag.WorldUnique];
+                itemDef.deprecatedTier = ItemTier.NoTier;
+
+                var displayRules = new ItemDisplayRuleDict(null);
+
+                ItemAPI.Add(new CustomItem(itemDef, displayRules));
+
+                fakeItemNames.Add(itemDef.name);
+            }     
+        }
         private void HandleEquipmentDrone(On.RoR2.CharacterMaster.orig_Start orig, CharacterMaster self)
         {
             if (ArtifactEnabled)
             {
-                //Log.Message("start random master " + self.bodyPrefab.name);
-
                 if (self.bodyPrefab.GetComponent<CharacterBody>() == RoR2.RoR2Content.BodyPrefabs.EquipmentDroneBody)
                 {
-                    //Log.Warning("equipment drone!!!");
                     EquipmentIndex equipIndex = self.minionOwnership.ownerMaster.inventory.currentEquipmentIndex;
                     if (equipIndex != EquipmentIndex.None)
                     {
@@ -62,34 +164,65 @@ namespace DroneCommand
             orig(self);
         }
 
+        private DroneDef FindDrone(GameObject gameObject)
+        {
+            SummonMasterBehavior s = gameObject.GetComponent<SummonMasterBehavior>();
+
+            if (s)
+            {
+                CharacterMaster master = s.masterPrefab.GetComponent<CharacterMaster>();
+                DroneDef curDrone = DroneCatalog.FindDroneDefFromBody(master.bodyPrefab);
+                return curDrone;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         private void HandleDrone(On.RoR2.Interactor.orig_PerformInteraction orig, Interactor self, GameObject interactableObject)
         {
             if (NetworkServer.active && ArtifactEnabled)
             {
-                if ((interactableObject.GetComponent<SummonMasterBehavior>() || interactableObject.GetComponent<DroneVendorTerminalBehavior>()) &&
-                    interactableObject.GetComponent<PurchaseInteraction>().CanBeAffordedByInteractor(self))
+                bool flag = FindDrone(interactableObject);
+
+                bool flag2 = interactableObject.GetComponent<DroneVendorTerminalBehavior>();
+
+                bool flag3 = false;
+                PurchaseInteraction p = interactableObject.GetComponent<PurchaseInteraction>();
+                if (p)
+                {
+                    flag3 = p && !p.CanBeAffordedByInteractor(self);
+                }
+                         
+                if ((flag || flag2) && !flag3)
                 {
 
                     GameObject cube = RoR2.Artifacts.CommandArtifactManager.commandCubePrefab;
 
-                    HUD hud = HUD.readOnlyInstanceList[0];
                     GameObject pickerObj = UnityEngine.Object.Instantiate(
-                         cube.GetComponent<PickupPickerController>().panelPrefab, hud.transform);
+                       cube, interactableObject.transform);
+                    pickerObj.transform.name = "gofuckyourself";
+
+                    PickupCatalog.itemTierToPickupIndex.TryGetValue(ItemTier.NoTier, out PickupIndex pickupIndex);
+                    pickerObj.GetComponent<PickupIndexNetworker>().NetworkpickupState = new UniquePickup(pickupIndex);
 
 
-                    PickupPickerPanel picker = pickerObj.GetComponent<PickupPickerPanel>();
-                    PickupPickerPanel pickerPref = cube.GetComponent<PickupPickerController>().panelPrefab.GetComponent<PickupPickerPanel>();
+                    Rigidbody rb = pickerObj.GetComponent<Rigidbody>();
+                    rb.isKinematic = true;
+
+                    foreach (Transform child in pickerObj.transform)
+                    {
+                        UnityEngine.Object.Destroy(child.gameObject);
+                    }
 
 
-                    PickupPickerController controller = UnityEngine.Object.Instantiate<PickupPickerController>(
-                        cube.GetComponent<PickupPickerController>(), pickerObj.transform);
+                    PickupPickerController controller = pickerObj.GetComponent<PickupPickerController>();
 
-                    controller.panelInstance = pickerObj;
-                    controller.panelInstanceController = picker;
-
-                    picker.pickerController = controller;
-            
-
+                    controller.onUniquePickupSelected = new PickupPickerController.UniquePickupUnityEvent();
+                    GameObject newPanel = R2API.PrefabAPI.InstantiateClone(controller.panelPrefab, "fuckingpanel");
+                    controller.panelPrefab = newPanel;
+          
 
                     DroneDef[] drones = DroneCatalog.droneDefs;
 
@@ -97,46 +230,38 @@ namespace DroneCommand
 
                     for (int i = 0; i < drones.Length; i++)
                     {
-                        PickupIndex index = PickupCatalog.FindPickupIndex(drones[i].droneIndex);
+                        if (drones[i].tier != FindDrone(interactableObject).tier && sameTier.Value)
+                            continue;
 
+                        droneToFakeItem.TryGetValue(drones[i].droneIndex, out ItemIndex fakeItem);
+
+                        PickupIndex index = PickupCatalog.FindPickupIndex(fakeItem);
+                   
                         optionList.Add(new PickupPickerController.Option
                         {
                             pickup = new UniquePickup(index),
                             available = true,
                         });
                     }
-                  
+
                     controller.SetOptionsServer(optionList.ToArray());
 
+                    NetworkServer.Spawn(pickerObj);
 
-                    //override color
-                    Image[] array = picker.coloredImages;
-                    Image[] array2 = pickerPref.coloredImages;
-                    for (int i = 0; i < array.Length; i++)
-                    {
-                        array[i].color = array2[i].color;
-                        array[i].color *= new Color32(41, 101, 255, 255);
-                    }
-                    array = picker.darkColoredImages;
-                    array2 = pickerPref.darkColoredImages;
-                    for (int i = 0; i < picker.darkColoredImages.Length; i++)
-                    {
-                        array[i].color = array2[i].color;
-                        array[i].color *= new Color32(41, 101, 255, 255);
-                    }
+                    controller.OnInteractionBegin(self);
 
-
-                    //remove junk event
-                    controller.onUniquePickupSelected = new PickupPickerController.UniquePickupUnityEvent();
 
                     controller.onUniquePickupSelected.AddListener((pickup) =>
                     {
                         if (!NetworkServer.active)
                             return;
 
-                        DroneIndex droneIndex = PickupCatalog.GetPickupDef(pickup.pickupIndex).droneIndex;
+                        ItemIndex itemIndex = PickupCatalog.GetPickupDef(pickup.pickupIndex).itemIndex;
+                        fakeItemToDrone.TryGetValue(itemIndex, out DroneIndex droneIndex);
+
                         DroneDef drone = DroneCatalog.GetDroneDef(droneIndex);
-                      
+                        PickupIndex pickupIndex = PickupCatalog.FindPickupIndex(droneIndex);
+
                         SummonMasterBehavior s = interactableObject.GetComponent<SummonMasterBehavior>();
                         DroneVendorTerminalBehavior t = interactableObject.GetComponent<DroneVendorTerminalBehavior>();
                         if (s)
@@ -145,13 +270,10 @@ namespace DroneCommand
                         }
                         if (t)
                         {
-                            t.currentPickup = new UniquePickup(pickup.pickupIndex);
+                            t.currentPickup = new UniquePickup(pickupIndex);
                         }
 
-
-                        orig(self, interactableObject);                   
-
-                        UnityEngine.Object.Destroy(pickerObj);
+                        orig(self, interactableObject);
                     });
 
 
