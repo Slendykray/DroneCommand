@@ -1,3 +1,8 @@
+## 1.2.1
+
+- Fixed drone multishop
+- Changed readme
+
 ## 1.2.0
 
 - a toooon of fixeeessss

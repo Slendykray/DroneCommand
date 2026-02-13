@@ -37,7 +37,7 @@ namespace DroneCommand
         }
         private void CreateConfig(ConfigFile config)
         {
-            sameTier = config.Bind<bool>("Artifact: " + ArtifactName, "SameTier", false, "Only allow to pick drones from the same tier (boring)");
+            sameTier = config.Bind<bool>("Artifact: " + ArtifactName, "SameTier", true, "Only allow to pick drones from the same tier (boring)");
 
             if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("com.rune580.riskofoptions"))
             {
@@ -278,10 +278,11 @@ namespace DroneCommand
                             t.currentPickup = new UniquePickup(pickupIndex);
                         }
 
+                        UnityEngine.Object.Destroy(pickerObj);
+
                         orig(self, interactableObject);
                     });
-
-
+                  
                     return;
                 }
             }
