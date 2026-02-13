@@ -164,20 +164,24 @@ namespace DroneCommand
             orig(self);
         }
 
-        private DroneDef FindDrone(GameObject gameObject)
+        private DroneDef FindDrone(GameObject interactableObject)
         {
-            SummonMasterBehavior s = gameObject.GetComponent<SummonMasterBehavior>();
+            SummonMasterBehavior s = interactableObject.GetComponent<SummonMasterBehavior>();
+            DroneVendorTerminalBehavior t = interactableObject.GetComponent<DroneVendorTerminalBehavior>();
 
+            DroneDef curDrone = null;
             if (s)
             {
                 CharacterMaster master = s.masterPrefab.GetComponent<CharacterMaster>();
-                DroneDef curDrone = DroneCatalog.FindDroneDefFromBody(master.bodyPrefab);
-                return curDrone;
+                curDrone = DroneCatalog.FindDroneDefFromBody(master.bodyPrefab);          
             }
-            else
+            if (t)
             {
-                return null;
+                DroneIndex droneIndex = PickupCatalog.GetPickupDef(t.currentPickup.pickupIndex).droneIndex;
+                curDrone = DroneCatalog.GetDroneDef(droneIndex);         
             }
+
+            return curDrone;
         }
 
         private void HandleDrone(On.RoR2.Interactor.orig_PerformInteraction orig, Interactor self, GameObject interactableObject)
@@ -220,6 +224,7 @@ namespace DroneCommand
                     PickupPickerController controller = pickerObj.GetComponent<PickupPickerController>();
 
                     controller.onUniquePickupSelected = new PickupPickerController.UniquePickupUnityEvent();
+
                     GameObject newPanel = R2API.PrefabAPI.InstantiateClone(controller.panelPrefab, "fuckingpanel");
                     controller.panelPrefab = newPanel;
           
