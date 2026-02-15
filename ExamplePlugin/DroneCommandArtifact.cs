@@ -190,16 +190,14 @@ namespace DroneCommand
             {
                 bool flag = FindDrone(interactableObject);
 
-                bool flag2 = interactableObject.GetComponent<DroneVendorTerminalBehavior>();
-
-                bool flag3 = false;
+                bool flag2 = false;
                 PurchaseInteraction p = interactableObject.GetComponent<PurchaseInteraction>();
                 if (p)
                 {
-                    flag3 = p && !p.CanBeAffordedByInteractor(self);
+                    flag2 = !p.CanBeAffordedByInteractor(self);
                 }
                          
-                if ((flag || flag2) && !flag3)
+                if (flag && !flag2)
                 {
 
                     GameObject cube = RoR2.Artifacts.CommandArtifactManager.commandCubePrefab;
