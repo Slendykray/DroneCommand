@@ -32,6 +32,7 @@ namespace DroneCommand
             CreateConfig(config);
             CreateLang();
             CreateArtifact();
+
             Hooks();
             CreateFakeItemDefs();
         }
@@ -137,7 +138,7 @@ namespace DroneCommand
                 itemDef.hidden = true;
                 itemDef.canRemove = false;          
                 itemDef.tags = [ItemTag.WorldUnique];
-                itemDef.deprecatedTier = ItemTier.NoTier;
+                itemDef.deprecatedTier = ItemTier.Lunar;
 
                 var displayRules = new ItemDisplayRuleDict(null);
 
@@ -157,7 +158,6 @@ namespace DroneCommand
                     {
                         self.inventory.SetEquipmentIndex(equipIndex, false);
                     }
-
                 }
             }      
 
@@ -200,32 +200,11 @@ namespace DroneCommand
                 if (flag && !flag2)
                 {
 
-                    GameObject cube = RoR2.Artifacts.CommandArtifactManager.commandCubePrefab;
-
                     GameObject pickerObj = UnityEngine.Object.Instantiate(
-                       cube, interactableObject.transform);
-                    pickerObj.transform.name = "gofuckyourself";
-
-                    PickupCatalog.itemTierToPickupIndex.TryGetValue(ItemTier.NoTier, out PickupIndex pickupIndex);
-                    pickerObj.GetComponent<PickupIndexNetworker>().NetworkpickupState = new UniquePickup(pickupIndex);
-
-
-                    Rigidbody rb = pickerObj.GetComponent<Rigidbody>();
-                    rb.isKinematic = true;
-
-                    foreach (Transform child in pickerObj.transform)
-                    {
-                        UnityEngine.Object.Destroy(child.gameObject);
-                    }
-
+                       Prefabs.pickerPrefab, interactableObject.transform);
 
                     PickupPickerController controller = pickerObj.GetComponent<PickupPickerController>();
 
-                    controller.onUniquePickupSelected = new PickupPickerController.UniquePickupUnityEvent();
-
-                    GameObject newPanel = R2API.PrefabAPI.InstantiateClone(controller.panelPrefab, "fuckingpanel");
-                    controller.panelPrefab = newPanel;
-          
 
                     DroneDef[] drones = DroneCatalog.droneDefs;
 

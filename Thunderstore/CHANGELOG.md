@@ -1,3 +1,7 @@
+## 1.3.0
+
+- Fixed visual glitch in multiplayer
+
 ## 1.2.1
 
 - Fixed drone multishop

@@ -25,7 +25,7 @@
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-	  <Exec Command="xcopy &quot;C:\Users\Slend\Documents\GitHub\DroneCommand\ExamplePlugin\bin\Debug\netstandard2.1\DroneCommand.dll&quot; &quot;C:\r2Profiles\RiskOfRain2\profiles\DroneCommand\BepInEx\plugins\drone&quot; /Y /I" />
+	  <Exec Command="xcopy &quot;C:\Users\Slendykray\Documents\GitHub\DroneCommand\ExamplePlugin\bin\Debug\netstandard2.1\DroneCommand.dll&quot; &quot;C:\Users\Slendykray\Documents\r2profiles\RiskOfRain2\profiles\dev\BepInEx\plugins\DroneCommand&quot; /Y /I" />
 	</Target>
 
 </Project>
