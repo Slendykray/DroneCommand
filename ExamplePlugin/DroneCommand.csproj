@@ -14,18 +14,18 @@
 
 		<PackageReference Include="BepInEx.Core" Version="5.4.21" />
 
-		<PackageReference Include="R2API.Items" Version="1.0.7" />
-		<PackageReference Include="R2API.Language" Version="1.0.*" />
+		<PackageReference Include="R2API.Items" Version="1.0.8" />
+		<PackageReference Include="R2API.Language" Version="1.1.0" />
 		<PackageReference Include="R2API.Prefab" Version="1.1.1" />
-		<PackageReference Include="Rune580.Mods.RiskOfRain2.RiskOfOptions" Version="2.8.5" />
+		<PackageReference Include="Rune580.Mods.RiskOfRain2.RiskOfOptions" Version="2.8.6" />
 
 		<PackageReference Include="UnityEngine.Modules" Version="2021.3.33" IncludeAssets="compile" />
-		<PackageReference Include="RiskOfRain2.GameLibs" Version="1.4.1-r.0" />
-		<PackageReference Include="MMHOOK.RoR2" Version="2025.6.3" NoWarn="NU1701" />
+		<PackageReference Include="RiskOfRain2.GameLibs" Version="1.5.0-r.1" />
+		<PackageReference Include="MMHOOK.RoR2" Version="2026.10.8" NoWarn="NU1701" />
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-	  <Exec Command="xcopy &quot;C:\Users\Slendykray\Documents\GitHub\DroneCommand\ExamplePlugin\bin\Debug\netstandard2.1\DroneCommand.dll&quot; &quot;C:\Users\Slendykray\Documents\r2profiles\RiskOfRain2\profiles\dev\BepInEx\plugins\DroneCommand&quot; /Y /I" />
+	  <Exec Command="xcopy &quot;$(ProjectDir)\bin\Debug\netstandard2.1\*.dll&quot; &quot;$(ProjectDir)..\Thunderstore\plugins&quot; /Y /I&#xD;&#xA;&#xD;&#xA;xcopy &quot;$(ProjectDir)..\Thunderstore\plugins&quot; &quot;C:\Users\Slendykray\Documents\r2profiles\RiskOfRain2\profiles\dev\BepInEx\plugins\DroneCommand&quot; /Y /I" />
 	</Target>
 
 </Project>

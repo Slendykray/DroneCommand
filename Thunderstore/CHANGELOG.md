@@ -1,3 +1,7 @@
+## 1.3.1
+
+- Fixed icons not displaying in hallowed concepts
+
 ## 1.3.0
 
 - Fixed visual glitch in multiplayer

@@ -117,7 +117,7 @@ namespace DroneCommand
                 itemDef.pickupToken = drone.pickupToken;
                 itemDef.descriptionToken = drone.descriptionToken;   
 
-                itemDef.pickupIconSprite = drone.iconSprite;
+                itemDef.pickupIconSpriteReference = drone.iconSpriteReference;
 
                 droneToFakeItem.Add(droneIndex, itemIndex);
                 fakeItemToDrone.Add(itemIndex, droneIndex);
