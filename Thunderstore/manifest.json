@@ -1,6 +1,6 @@
 ﻿{
 	"name": "DroneCommand",
-	"version_number": "1.3.1",
+	"version_number": "1.3.3",
 	"website_url": "https://github.com/Slendykray/DroneCommand",
 	"description": "Choose your drones",
 	"dependencies": [

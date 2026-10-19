@@ -1,3 +1,11 @@
+## 1.3.2
+
+- Drones dont show up it items logbook
+
+## 1.3.2
+
+- Fixed modded drones icons
+
 ## 1.3.1
 
 - Fixed icons not displaying in hallowed concepts

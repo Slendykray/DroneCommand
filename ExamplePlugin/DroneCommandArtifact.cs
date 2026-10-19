@@ -115,9 +115,12 @@ namespace DroneCommand
                 itemDef.name = drone.name;
                 itemDef.nameToken = drone.nameToken;
                 itemDef.pickupToken = drone.pickupToken;
-                itemDef.descriptionToken = drone.descriptionToken;   
+                itemDef.descriptionToken = drone.descriptionToken;
 
                 itemDef.pickupIconSpriteReference = drone.iconSpriteReference;
+                itemDef.pickupIconSprite = drone.iconSprite;
+
+                
 
                 droneToFakeItem.Add(droneIndex, itemIndex);
                 fakeItemToDrone.Add(itemIndex, droneIndex);
@@ -138,7 +141,8 @@ namespace DroneCommand
                 itemDef.hidden = true;
                 itemDef.canRemove = false;          
                 itemDef.tags = [ItemTag.WorldUnique];
-                itemDef.deprecatedTier = ItemTier.Lunar;
+
+                itemDef.deprecatedTier = ItemTier.NoTier;
 
                 var displayRules = new ItemDisplayRuleDict(null);
 
